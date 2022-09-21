@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'mqtt_client.dart';
 
@@ -35,12 +37,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late MqttClient client;
-  var topic = "flutter/test";
+  var pubTopic = "flutter/pub";
+  var subTopic = "flutter/sub";
 
   void _publish(String message) {
     final builder = MqttClientPayloadBuilder();
     builder.addString('Hello from flutter_client');
-    client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
+    client.publishMessage(pubTopic, MqttQos.atLeastOnce, builder.payload!);
   }
 
   @override
@@ -61,24 +64,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 })
               },
             ),
-            // ElevatedButton(
-            //   child: Text('Subscribe'),
-            //   onPressed: () {
-            //     return {client?.subscribe(topic, MqttQos.atLeastOnce)};
-            //   },
-            // ),
+            ElevatedButton(
+              child: const Text('Subscribe'),
+              onPressed: () {
+                print({client.subscribe('flutter/set', MqttQos.atLeastOnce)});
+              },
+            ),
             ElevatedButton(
               child: const Text('Publish'),
               onPressed: () => {_publish('Hello')},
             ),
-            // ElevatedButton(
-            //   child: Text('Unsubscribe'),
-            //   onPressed: () => {client?.unsubscribe(topic)},
-            // ),
-            // ElevatedButton(
-            //   child: Text('Disconnect'),
-            //   onPressed: () => {client?.disconnect()},
-            // ),
+            ElevatedButton(
+              child: const Text('Unsubscribe'),
+              onPressed: () => {client.unsubscribe(subTopic)},
+            ),
+            ElevatedButton(
+              child: const Text('Disconnect'),
+              onPressed: () => {client.disconnect()},
+            ),
           ],
         ),
       ),

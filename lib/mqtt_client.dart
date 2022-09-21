@@ -4,21 +4,28 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'dart:io';
 
+const server = 'home.atomar.de';
+const username = 'tulpe';
+const password = 'HKUabc98';
+
 Future<MqttClient> connect() async {
-  MqttServerClient client =
-      MqttServerClient.withPort('home.atomar.de', 'flutter_client', 1883);
+  MqttServerClient client = MqttServerClient.withPort(
+    server,
+    'flutter_client',
+    1883,
+  );
   client.logging(on: true);
   client.onConnected = onConnected;
   client.onDisconnected = onDisconnected;
-  // client.onUnsubscribed = onUnsubscribed;
   client.onSubscribed = onSubscribed;
+  client.onUnsubscribed = onUnsubscribed;
   client.onSubscribeFail = onSubscribeFail;
   client.pongCallback = pong;
+  client.keepAlivePeriod = 60;
 
   final connMess = MqttConnectMessage()
       .withClientIdentifier("flutter_client")
-      .authenticateAs('tulpe', 'HKUabc98')
-      // .keepAliveFor(60)
+      .authenticateAs(username, password)
       .withWillTopic('willtopic')
       .withWillMessage('My Will message')
       .startClean()
@@ -67,16 +74,16 @@ void onDisconnected() {
   print('Disconnected');
 }
 
-void onSubscribed(String topic) {
+void onSubscribed(String? topic) {
   print('Subscribed topic: $topic');
+}
+
+void onUnsubscribed(String? topic) {
+  print('Unsubscribed topic: $topic');
 }
 
 void onSubscribeFail(String topic) {
   print('Failed to subscribe topic: $topic');
-}
-
-void onUnsubscribed(String topic) {
-  print('Unsubscribed topic: $topic');
 }
 
 void pong() {
