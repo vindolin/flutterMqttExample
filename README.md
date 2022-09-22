@@ -1,15 +1,11 @@
-# mqtee
+# flutterMqttExample
 
-A new Flutter project.
+Basic MQTT Flutter example.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This is a 3.x port of the MQTT example app from https://github.com/emqx/MQTT-Client-Examples/tree/master/mqtt-client-Flutter
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
