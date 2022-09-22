@@ -4,67 +4,11 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'dart:io';
 
-const server = 'home.atomar.de';
-const username = 'tulpe';
-const password = 'HKUabc98';
-
-Future<MqttClient> connect() async {
-  MqttServerClient client = MqttServerClient.withPort(
-    server,
-    'flutter_client',
-    1883,
-  );
-  client.logging(on: true);
-  client.onConnected = onConnected;
-  client.onDisconnected = onDisconnected;
-  client.onSubscribed = onSubscribed;
-  client.onUnsubscribed = onUnsubscribed;
-  client.onSubscribeFail = onSubscribeFail;
-  client.pongCallback = pong;
-  client.keepAlivePeriod = 60;
-
-  final connMess = MqttConnectMessage()
-      .withClientIdentifier("flutter_client")
-      .authenticateAs(username, password)
-      .withWillTopic('willtopic')
-      .withWillMessage('My Will message')
-      .startClean()
-      .withWillQos(MqttQos.atLeastOnce);
-  client.connectionMessage = connMess;
-  try {
-    print('Connecting');
-    await client.connect();
-  } catch (e) {
-    print('Exception: $e');
-    client.disconnect();
-  }
-
-  if (client.connectionStatus?.state == MqttConnectionState.connected) {
-    print('EMQX client connected');
-    client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-      final message = c![0].payload as MqttPublishMessage;
-      final payload =
-          MqttPublishPayload.bytesToStringAsString(message.payload.message);
-
-      print('Received message:$payload from topic: ${c[0].topic}>');
-    });
-
-    client.published!.listen((MqttPublishMessage message) {
-      print('published');
-      final payload =
-          MqttPublishPayload.bytesToStringAsString(message.payload.message);
-      print(
-          'Published message: $payload to topic: ${message.variableHeader?.topicName}');
-    });
-  } else {
-    print(
-        'EMQX client connection failed - disconnecting, status is ${client.connectionStatus}');
-    client.disconnect();
-    exit(-1);
-  }
-
-  return client;
-}
+const server = 'broker.emqx.io';
+const port = 1883;
+const username = 'user';
+const password = 'password';
+const clientIdentifier = 'flutter_client';
 
 void onConnected() {
   print('Connected');
@@ -88,4 +32,66 @@ void onSubscribeFail(String topic) {
 
 void pong() {
   print('Ping response client callback invoked');
+}
+
+Future<MqttClient> connect() async {
+  MqttServerClient client = MqttServerClient.withPort(
+    server,
+    'flutter_client',
+    port,
+  );
+  client.logging(on: true);
+  client.onConnected = onConnected;
+  client.onDisconnected = onDisconnected;
+  client.onSubscribed = onSubscribed;
+  client.onUnsubscribed = onUnsubscribed;
+  client.onSubscribeFail = onSubscribeFail;
+  client.pongCallback = pong;
+  client.keepAlivePeriod = 60;
+
+  final connectionMessage = MqttConnectMessage()
+      .withClientIdentifier(clientIdentifier)
+      .authenticateAs(username, password)
+      .withWillTopic('withWillTopic')
+      .withWillMessage('withWillMessage')
+      .startClean()
+      .withWillQos(MqttQos.atLeastOnce);
+  client.connectionMessage = connectionMessage;
+
+  try {
+    print('Connecting');
+    await client.connect();
+  } catch (e) {
+    print('Exception: $e');
+    client.disconnect();
+  }
+
+  if (client.connectionStatus?.state == MqttConnectionState.connected) {
+    print('client connected');
+
+    client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+      final message = c![0].payload as MqttPublishMessage;
+      final payload = MqttPublishPayload.bytesToStringAsString(
+        message.payload.message,
+      );
+
+      print('Received message:$payload from topic: ${c[0].topic}>');
+    });
+
+    client.published!.listen((MqttPublishMessage message) {
+      print('published');
+      final payload =
+          MqttPublishPayload.bytesToStringAsString(message.payload.message);
+      print(
+          'Published message: $payload to topic: ${message.variableHeader?.topicName}');
+    });
+  } else {
+    print(
+      'Client connection failed - disconnecting, status is ${client.connectionStatus}',
+    );
+    client.disconnect();
+    exit(-1);
+  }
+
+  return client;
 }
